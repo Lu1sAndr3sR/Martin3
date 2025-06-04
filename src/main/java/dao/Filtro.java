@@ -19,7 +19,7 @@ import pojo.ErrorClass;
  */
 public class Filtro {
 
-    private String nombre_campo;
+    private String nombreCampo;
     private Criterio criterio;
     private TipoDato tipo;
     private Object value;
@@ -34,18 +34,18 @@ public class Filtro {
         MENORQUE("<"),
         LIKE("ilike");
 
-        private final String criterio;
+        private final String tipoCriterio;
 
-        private Criterio(String criterio) {
-            this.criterio = criterio;
+        private Criterio(String tipoCriterio) {
+            this.tipoCriterio = tipoCriterio;
         }
 
-        public String getCriterio() {
-            return criterio;
+        public String getTipoCriterio() {
+            return tipoCriterio;
         }
 
-        public static Criterio toCriterio(String criterio) {
-            switch (criterio) {
+        public static Criterio toCriterio(String tipoCriterio) {
+            switch (tipoCriterio) {
                 case "=":
                     return IGUAL;
                 case ">":
@@ -69,12 +69,12 @@ public class Filtro {
         this.tipo = tipo;
     }
 
-    public String getNombre_campo() {
-        return nombre_campo;
+    public String getNombreCampo() {
+        return nombreCampo;
     }
 
-    public void setNombre_campo(String nombre_campo) {
-        this.nombre_campo = nombre_campo;
+    public void setNombreCampo(String nombreCampo) {
+        this.nombreCampo = nombreCampo;
     }
 
     public Criterio getCriterio() {
@@ -96,9 +96,9 @@ public class Filtro {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        str.append(nombre_campo)
+        str.append(nombreCampo)
                 .append(" ")
-                .append(criterio.getCriterio())
+                .append(criterio.getTipoCriterio())
                 .append(" ? ");
         return str.toString();
     }
@@ -107,7 +107,7 @@ public class Filtro {
     public void objectify(JSONObject json) throws JSONException {
 
         String temp = json.getString("nombre_campo");
-        this.setNombre_campo(temp);
+        this.setNombreCampo(temp);
         temp = json.getString("criterio");
         this.setCriterio(Filtro.Criterio.toCriterio(temp));
         temp = json.getString("tipo");
@@ -138,10 +138,7 @@ public class Filtro {
                 f.add(filtro);
             }
         } catch (JSONException ex) {
-            ErrorClass error = new ErrorClass();
-            error.setCode("409");
-            error.setMessage("Bad Request");
-            throw error;
+            throw new ErrorClass("Bad Request", null, "409");
         }
         return f;
     }

@@ -12,8 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -42,9 +40,7 @@ public class DAOFormatos implements DAOGeneral<Formato, String> {
             pr.setString(1, pojo.getFormato().toUpperCase());
             pr.executeUpdate();
             return true;
-        } catch (SQLException ex) {
-            throw ex;
-        }
+        } 
     }
 
     @Override
@@ -58,10 +54,6 @@ public class DAOFormatos implements DAOGeneral<Formato, String> {
             pr.executeUpdate();
 
             return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOFormatos.class.getName()).log(Level.SEVERE, null, ex);
-
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();
@@ -81,9 +73,6 @@ public class DAOFormatos implements DAOGeneral<Formato, String> {
             pr.executeUpdate();
 
             return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOFormatos.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();
@@ -93,7 +82,7 @@ public class DAOFormatos implements DAOGeneral<Formato, String> {
 
     @Override
     public Formato getOne(String clave) throws SQLException {
-        String sql = "select * from formatos where formato = ?";
+        String sql = "select nombre_formato from formatos where formato = ?";
         PreparedStatement pr = null;
         Formato formato = null;
         try {
@@ -106,9 +95,6 @@ public class DAOFormatos implements DAOGeneral<Formato, String> {
                     return formato;
                 }
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOFormatos.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();
@@ -119,7 +105,7 @@ public class DAOFormatos implements DAOGeneral<Formato, String> {
 
     @Override
     public List<Formato> getAll() throws SQLException {
-        String sql = "select * from formatos";
+        String sql = "select nombre_formato from formatos";
         PreparedStatement pr = null;
         List<Formato> formatos = new ArrayList<>();
 
@@ -133,9 +119,6 @@ public class DAOFormatos implements DAOGeneral<Formato, String> {
                 }
                 return formatos;
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOFormatos.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();

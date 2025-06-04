@@ -6,9 +6,8 @@
 package config;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -22,11 +21,11 @@ public class ConfigAccess {
     private final Properties property = new Properties();
     private static InputStream stream;
 
-    private ConfigAccess() throws FileNotFoundException, IOException {
-
-        // this is how we load file within editor (eg eclipse)
+    static {
         stream = ConfigAccess.class.getClassLoader().getResourceAsStream(PROPERTIES);
+    }
 
+    private ConfigAccess() throws IOException {
         property.load(stream);
     }
 
@@ -37,7 +36,7 @@ public class ConfigAccess {
         return recurso;
     }
 
-    public String getValue(String key) throws FileNotFoundException, IOException {
+    public String getValue(String key) {
 
         return property.getProperty(key);
     }

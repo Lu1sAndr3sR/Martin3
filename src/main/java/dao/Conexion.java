@@ -22,7 +22,8 @@ public class Conexion implements Serializable {
 
     private static Connection cx;
     private static Conexion c;
-    private Conexion() {
+
+    static {
         try {
             String ip = ConfigAccess.getRecurso().getValue("app.db.ip");
             String dbname = ConfigAccess.getRecurso().getValue("app.db.nombre");
@@ -30,13 +31,14 @@ public class Conexion implements Serializable {
             String password = ConfigAccess.getRecurso().getValue("app.db.password");
             String port = ConfigAccess.getRecurso().getValue("app.db.port");
             String ruta = "jdbc:postgresql://"
-                    + ip+":"+port+"/"+dbname;
-            Class.forName("org.postgresql.Driver");
-            cx = DriverManager.getConnection(ruta, user,password);
-        } catch (ClassNotFoundException | SQLException | IOException ex) {
-            Logger.getLogger(Conexion.class.getName()).log(Level.SEVERE, null, ex);
+                    + ip + ":" + port + "/" + dbname;
+            cx = DriverManager.getConnection(ruta, user, password);
+        } catch (SQLException | IOException e) {
+            Logger.getLogger(Conexion.class.getName()).log(Level.SEVERE, null, e);
         }
-        
+    }
+
+    private Conexion() {
     }
 
     public static Connection getConnection() {

@@ -19,9 +19,9 @@ import java.util.logging.Logger;
 public class BusquedasIdsBlockchain implements Serializable {
 
     public enum IdToBlock {
-        USUARIO("select direccion_blockchain_usuario from usuarios where id_usuario=?"),
-        EXPEDIENTE("select direccion_blockchain_expediente from expedientes where id_expediente=?"),
-        DOCUMENTO("select direccion_blockchain_documento from documentos where id_documento=?");
+        USUARIO("select direccionBlockchain_usuario from usuarios where id_usuario=?"),
+        EXPEDIENTE("select direccionBlockchain_expediente from expedientes where id_expediente=?"),
+        DOCUMENTO("select direccionBlockchain_documento from documentos where id_documento=?");
         private final String id;
 
         IdToBlock(String ad) {
@@ -34,9 +34,9 @@ public class BusquedasIdsBlockchain implements Serializable {
     }
 
     public enum BlockToId {
-        USUARIO("select id_usuario from usuarios where direccion_blockchain_usuario=?"),
-        EXPEDIENTE("select id_expediente from expedientes where direccion_blockchain_expediente=?"),
-        DOCUMENTO("select id_documento from documentos where direccion_blockchain_documento=?");
+        USUARIO("select id_usuario from usuarios where direccionBlockchain_usuario=?"),
+        EXPEDIENTE("select id_expediente from expedientes where direccionBlockchain_expediente=?"),
+        DOCUMENTO("select id_documento from documentos where direccionBlockchain_documento=?");
         private final String id;
 
         BlockToId(String ad) {
@@ -56,8 +56,7 @@ public class BusquedasIdsBlockchain implements Serializable {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String direccion = rs.getString(1);
-                    return direccion;
+                    return rs.getString(1);
                 }
             }
         } catch (SQLException ex) {
@@ -70,17 +69,15 @@ public class BusquedasIdsBlockchain implements Serializable {
         return "";
     }
 
-    public static String getId(String direccion_blockchain, BlockToId tabla) throws SQLException {
+    public static String getId(String direccionBlockchain, BlockToId tabla) throws SQLException {
         String sql = tabla.getQuery();
         PreparedStatement ps = null;
         try {
             ps = Conexion.getConnection().prepareStatement(sql);
-            ps.setString(1, direccion_blockchain);
+            ps.setString(1, direccionBlockchain);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String id = rs.getString(1);
-                    rs.close();
-                    return id;
+                    return  rs.getString(1);
                 }
             }
         } catch (SQLException ex) {

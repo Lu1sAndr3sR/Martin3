@@ -3,11 +3,16 @@ package config;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Random;
+import java.security.SecureRandom;
 import org.apache.commons.codec.binary.Base64;
+
+
+import java.nio.charset.StandardCharsets;
 
 public class Hasher {
     
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private Hasher(){
         
     }
@@ -50,11 +55,11 @@ public class Hasher {
             saltBytes = Base64.decodeBase64(salt);
         else {
             saltBytes = new byte[256];
-            new Random().nextBytes(saltBytes);
+            RANDOM.nextBytes(saltBytes);
         }
         MessageDigest md = MessageDigest.getInstance(alg);
         md.update(saltBytes);
-        byte[] passwordBytes = md.digest(inputPassword.getBytes("UTF-8"));
+        byte[] passwordBytes = md.digest(inputPassword.getBytes(StandardCharsets.UTF_8));
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < passwordBytes.length; i++)
             sb.append(Integer.toString((passwordBytes[i] & 0xff) + 0x100, 16).substring(1));

@@ -13,8 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -56,9 +54,6 @@ public class DAOTema implements DAOGeneral<Tema, String>, Serializable {
             pr.setString(1, clave.toUpperCase());
             pr.executeUpdate();
             return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOTema.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();
@@ -78,10 +73,6 @@ public class DAOTema implements DAOGeneral<Tema, String>, Serializable {
             pr.executeUpdate();
 
             return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOTema.class.getName()).log(Level.SEVERE, null, ex);
-
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();
@@ -91,7 +82,7 @@ public class DAOTema implements DAOGeneral<Tema, String>, Serializable {
 
     @Override
     public Tema getOne(String clave) throws SQLException {
-        String sql = "select * from temas where tema = ?";
+        String sql = "select nombre_tema from temas where tema = ?";
         PreparedStatement pr = null;
         Tema t = null;
         try {
@@ -103,9 +94,6 @@ public class DAOTema implements DAOGeneral<Tema, String>, Serializable {
                     t.setTema(rs.getString(1));
                 }
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOTema.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();
@@ -116,7 +104,7 @@ public class DAOTema implements DAOGeneral<Tema, String>, Serializable {
 
     @Override
     public List<Tema> getAll() throws SQLException {
-        String sql = "select * from temas";
+        String sql = "select nombre_tema from temas";
         PreparedStatement pr = null;
         List<Tema> temas = new ArrayList<>();
 
@@ -130,9 +118,6 @@ public class DAOTema implements DAOGeneral<Tema, String>, Serializable {
                 }
             }
             return temas;
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOTema.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         } finally {
             if (pr != null) {
                 pr.close();

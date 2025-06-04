@@ -15,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -48,37 +47,38 @@ public class DAOSolicitud implements Serializable {
         return daosolicitud;
     }
 
-    public Solicitud getOne(String id_solicitud, String password) throws SQLException, ErrorClass {
+    public Solicitud getOne(String idSolicitud, String password) throws SQLException, ErrorClass {
         Solicitud solicitud = null;
-        String sql = "select * from solicitudes where id_solicitud = ?";
+        String sql = "select password, direccion_blockchain from solicitudes where id_solicitud = ?";
         Connection c = Conexion.getConnection();
         try (PreparedStatement pr = c.prepareStatement(sql)) {
-            pr.setString(1, id_solicitud);
+            pr.setString(1, idSolicitud);
             try (ResultSet rs = pr.executeQuery()) {
                 if (rs.next()) {
                     solicitud = new Solicitud();
-                    solicitud.setPwd(rs.getString(5));
-                    if (rs.getString(5).equals(password)) {
+                    solicitud.setPassword(rs.getString(1));
+                    if (rs.getString(1).equals(password)) {
                         DAOExpediente daoexp = DAOExpediente.getDAOExpediente();
-                        String direccion_blockchain = rs.getString(2);
-                        String id_expediente = BusquedasIdsBlockchain.getId(direccion_blockchain, BusquedasIdsBlockchain.BlockToId.EXPEDIENTE);
-                        Expediente expediente = daoexp.getOne(id_expediente, "");
+                        String direccionBlockchain = rs.getString(2);
+                        String idExpediente = BusquedasIdsBlockchain.getId(direccionBlockchain,
+                                BusquedasIdsBlockchain.BlockToId.EXPEDIENTE);
+                        Expediente expediente = daoexp.getOne(idExpediente, "");
                         if (!expediente.isActivo()) {
                             expediente = null;
                         }
                         solicitud.setExpediente(expediente);
-                    }else{
+                    } else {
                         return null;
                     }
                 }
             }
-        } 
-        
+        }
+
         return solicitud;
     }
 
-    public Expediente login(String id_solicitud, String password) throws SQLException, ErrorClass {
-        Solicitud solicitud = getOne(id_solicitud, password);
+    public Expediente login(String idSolicitud, String password) throws SQLException, ErrorClass {
+        Solicitud solicitud = getOne(idSolicitud, password);
         return solicitud.getExpediente();
     }
 
@@ -87,8 +87,9 @@ public class DAOSolicitud implements Serializable {
         Connection c = Conexion.getConnection();
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, UUID.randomUUID().toString().substring(0, 9));
-            ps.setString(2, BusquedasIdsBlockchain.getDireccionBlockchain(id, BusquedasIdsBlockchain.IdToBlock.EXPEDIENTE));
-            Calendar gc = GregorianCalendar.getInstance();
+            ps.setString(2,
+                    BusquedasIdsBlockchain.getDireccionBlockchain(id, BusquedasIdsBlockchain.IdToBlock.EXPEDIENTE));
+            Calendar gc = Calendar.getInstance();
             gc.add(Calendar.DAY_OF_MONTH, 7);
             java.util.Date d = gc.getTime();
             java.sql.Date date = new java.sql.Date(d.getTime());
@@ -98,26 +99,20 @@ public class DAOSolicitud implements Serializable {
             ps.setInt(6, pojo.getTipo());
             ps.execute();
             return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOSolicitud.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         }
     }
 
-    public boolean delete(String id_solicitud) throws SQLException {
+    public boolean delete(String idSolicitud) throws SQLException {
         String sql = "delete from solicitudes where id_solicitud=?";
         Connection c = Conexion.getConnection();
         try (PreparedStatement ps = c.prepareCall(sql)) {
-            ps.setString(1, id_solicitud);
+            ps.setString(1, idSolicitud);
             ps.executeUpdate();
             return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOSolicitud.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         }
     }
 
-    public List<Solicitud> getAllByUsuario(String id_usuario) throws SQLException {
+    public List<Solicitud> getAllByUsuario(String idUsuario) throws SQLException {
 
         String sql = "select * from\n"
                 + "(select * from solicitudes\n"
@@ -128,29 +123,27 @@ public class DAOSolicitud implements Serializable {
                 + "order by (case when solicitudespendientes.estatus then 1 when solicitudespendientes.estatus is null then 2 else 3 end) asc";
 
         List<Solicitud> solicitudes = new ArrayList<>();
-        String id_usuario_blockchain = BusquedasIdsBlockchain.getDireccionBlockchain(id_usuario, BusquedasIdsBlockchain.IdToBlock.USUARIO);
+        String idUsuarioBlockchain = BusquedasIdsBlockchain.getDireccionBlockchain(idUsuario,
+                BusquedasIdsBlockchain.IdToBlock.USUARIO);
         try (PreparedStatement ps = Conexion.getConnection().prepareStatement(sql)) {
-            ps.setString(1, id_usuario_blockchain);
+            ps.setString(1, idUsuarioBlockchain);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Solicitud sol = new Solicitud();
-                    sol.setId_solicitud(rs.getString(1));
-                    sol.setFecha_limite(rs.getDate(3));
-                    sol.setPwd(rs.getString(5));
+                    sol.setIdSolicitud(rs.getString(1));
+                    sol.setFechaLimite(rs.getDate(3));
+                    sol.setPassword(rs.getString(5));
                     if (rs.getObject(4) != null) {
                         sol.setEstatus(rs.getBoolean(4));
                     }
                     sol.setUrl(url);
                     Expediente e = DAOExpediente.getDAOExpediente().getOne(rs.getString(7));
-                    sol.setId_expediente(e.getTitulo());
+                    sol.setIdExpediente(e.getTitulo());
                     sol.setExpediente(e);
                     solicitudes.add(sol);
                 }
                 return solicitudes;
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(DAOSolicitud.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         }
     }
 
@@ -158,22 +151,20 @@ public class DAOSolicitud implements Serializable {
         String sql;
         sql = "update solicitudes set estatus = ?, fecha_limite=? where id_solicitud = ?";
         try (PreparedStatement pr = Conexion.getConnection().prepareStatement(sql)) {
-            Calendar gc = GregorianCalendar.getInstance();
+            Calendar gc = Calendar.getInstance();
             gc.add(Calendar.DAY_OF_MONTH, 7);
             java.util.Date d = gc.getTime();
             java.sql.Date date = new java.sql.Date(d.getTime());
             pr.setBoolean(1, (boolean) solicitud.isEstatus());
             pr.setDate(2, date);
-            pr.setString(3, solicitud.getId_solicitud());
+            pr.setString(3, solicitud.getIdSolicitud());
             pr.executeUpdate();
-        } catch (SQLException ex) {
-            throw ex;
         }
 
     }
 
-    //Retorna la lista de solicitudes que debe aprobar/rechazar un autor
-    public List<Solicitud> check( String id_autor) throws SQLException {
+    // Retorna la lista de solicitudes que debe aprobar/rechazar un autor
+    public List<Solicitud> check(String idAutor) throws SQLException {
 
         StringBuilder sql = new StringBuilder("select * from "
                 + "(select * from solicitudes where estatus is null) as sols "
@@ -182,24 +173,23 @@ public class DAOSolicitud implements Serializable {
                 + "where expedientes.direccion_blockchain_autor = ? ");
         List<Solicitud> solicitudes = new ArrayList<>();
         try (PreparedStatement ps = Conexion.getConnection().prepareStatement(sql.toString())) {
-            String direccion = BusquedasIdsBlockchain.getDireccionBlockchain(id_autor, BusquedasIdsBlockchain.IdToBlock.USUARIO);
+            String direccion = BusquedasIdsBlockchain.getDireccionBlockchain(idAutor,
+                    BusquedasIdsBlockchain.IdToBlock.USUARIO);
             ps.setString(1, direccion);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Solicitud sol = new Solicitud();
-                    sol.setId_solicitud(rs.getString(1));
-                    sol.setFecha_limite(rs.getDate(3));
+                    sol.setIdSolicitud(rs.getString(1));
+                    sol.setFechaLimite(rs.getDate(3));
                     sol.setEstatus(rs.getBoolean(4));
-                    sol.setPwd(rs.getString(5));
+                    sol.setPassword(rs.getString(5));
                     Expediente e = DAOExpediente.getDAOExpediente().getOne(rs.getString(7));
-                    sol.setId_expediente(e.getTitulo());
+                    sol.setIdExpediente(e.getTitulo());
                     sol.setUrl(url);
                     sol.setExpediente(e);
                     solicitudes.add(sol);
                 }
             }
-        } catch (SQLException ex) {
-            throw ex;
         }
         return solicitudes;
     }
